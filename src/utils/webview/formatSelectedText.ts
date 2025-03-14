@@ -1,5 +1,14 @@
 type TextWrapper = "*" | "_" | "~" | "```";
 
+// Import DeepSeek-R1
+import DeepSeekR1 from 'deepseek-r1';
+
+async function translateText(text: string): Promise<string> {
+  // Use DeepSeek-R1 to translate text
+  const translatedText = await DeepSeekR1.translate(text, 'targetLanguage'); // Replace 'targetLanguage' with the desired language code
+  return translatedText;
+}
+
 function setCaretPosition({
   focusOffset,
   anchorOffset,
@@ -28,11 +37,19 @@ function setCaretPosition({
   selection.addRange(range);
 }
 
-function sendMessage() {
-  setTimeout(() => {
-    const sendButtonSpan = document.querySelector(
-      "#main footer button span[data-icon=send]"
-    );
+async function sendMessage() {
+  setTimeout(async () => {
+    const messageInput = document.querySelector("#main footer div[contenteditable]");
+    if (!messageInput) return;
+
+    // Translate message text before sending
+    const originalText = messageInput.innerHTML;
+    const translatedText = await translateText(originalText);
+
+    // Insert translated text into the message input
+    messageInput.innerHTML = translatedText;
+
+    const sendButtonSpan = document.querySelector("#main footer button span[data-icon=send]");
     if (!sendButtonSpan) return;
 
     const sendButton = sendButtonSpan.parentNode;
@@ -45,15 +62,15 @@ function sendMessage() {
   }, 0);
 }
 
-function insertMessageText(text: string, autoSend = false) {
-  const messageInput = document.querySelector(
-    "#main footer div[contenteditable]"
-  );
+async function insertMessageText(text: string, autoSend = false) {
+  const messageInput = document.querySelector("#main footer div[contenteditable]");
 
   if (!messageInput) return false;
 
+  const translatedText = await translateText(text);
+
   return setTimeout(() => {
-    messageInput.innerHTML = text;
+    messageInput.innerHTML = translatedText;
 
     const focusEvent = new FocusEvent("focus", {
       bubbles: true,
@@ -120,9 +137,7 @@ function formatMultiLine(selection: Selection, wrapper: TextWrapper) {
 }
 
 export function formatSelectedText(wrapper: TextWrapper) {
-  const messageInput = document.querySelector(
-    "#main footer div[contenteditable]"
-  );
+  const messageInput = document.querySelector("#main footer div[contenteditable]");
   if (!messageInput) return;
 
   const selection = window.getSelection();
