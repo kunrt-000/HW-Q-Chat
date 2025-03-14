@@ -1,12 +1,27 @@
+// src/utils/webview/formatSelectedText.ts
+
 type TextWrapper = "*" | "_" | "~" | "```";
 
-// Import DeepSeek-R1
-import DeepSeekR1 from 'deepseek-r1';
+// Import axios and the configuration
+import axios from 'axios';
+import { DEEPSEEK_R1_ENDPOINT, DEEPSEEK_R1_API_KEY } from '../config'; // Adjust the path as needed
 
 async function translateText(text: string): Promise<string> {
-  // Use DeepSeek-R1 to translate text
-  const translatedText = await DeepSeekR1.translate(text, 'targetLanguage'); // Replace 'targetLanguage' with the desired language code
-  return translatedText;
+  try {
+    const response = await axios.post(DEEPSEEK_R1_ENDPOINT, {
+      text,
+      targetLanguage: 'your_target_language', // Replace with desired language code
+    }, {
+      headers: {
+        'Authorization': `Bearer ${DEEPSEEK_R1_API_KEY}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    return response.data.translatedText;
+  } catch (error) {
+    console.error('Translation error:', error);
+    return text; // Fallback to original text in case of error
+  }
 }
 
 function setCaretPosition({
